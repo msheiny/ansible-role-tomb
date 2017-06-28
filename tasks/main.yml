@@ -1,0 +1,106 @@
+---
+# tasks file for ansible-tomb
+
+- name: install necessary tools
+  apt: name={{ item }} state=installed
+  with_items: "{{ tomb_necessary_tools }}"
+
+- name: Check tomb file
+  stat:
+    path: "{{tomb_install_directory}}/{{tomb_name}}"
+  register: st
+
+- name: Get latest version info
+  uri:
+    url: "{{tomb_package_meta_json}}"
+    method: GET
+    return_content: yes
+  register: latest_version_info
+
+- name: Set latest version as fact
+  set_fact:
+    tomb_version: "{{ (latest_version_info.content|from_json|first).name }}"
+  when: tomb_version == "latest"
+
+- name: Check tomb version
+  shell: |
+    grep 'VERSION="{{tomb_version | replace('v', '')}}"' {{tomb_install_directory}}/{{tomb_name}}
+  register: ver
+  when: st.stat.exists
+  failed_when: false
+  changed_when: false
+
+- name: Set archive name as fact unless testing
+  set_fact:
+    tomb_tgz: "{{tomb_name}}_{{tomb_version}}.tar.gz"
+  when:
+    - not ansible_unit_test
+    - ver|failed
+
+- name: Set install url as fact unless testing
+  set_fact:
+    tomb_tgz_url: "{{tomb_base_url}}/{{tomb_version}}.tar.gz"
+  when:
+    - not ansible_unit_test
+    - ver|failed
+
+- name: Downloading tomb archive
+  get_url:
+    url: "{{tomb_tgz_url}}"
+    dest: "/tmp/{{tomb_tgz}}"
+    mode: 0644
+  when:
+    - not ansible_unit_test
+    - ver|failed
+
+- name: unarchive tomb and copy tomb
+  unarchive:
+    copy: no
+    src: "/tmp/{{tomb_tgz}}"
+    dest: "{{tomb_install_directory}}"
+    owner: "{{tomb_owner}}"
+    group: "{{tomb_group}}"
+    mode: "{{tomb_mode}}"
+    extra_opts:
+      - "--strip=1"
+      - "--wildcards"
+      - "*/tomb"
+  when:
+    - not ansible_unit_test
+    - ver|failed
+
+- name: Create man page dir
+  file:
+    path: "{{tomb_manpage_directory}}"
+    state: directory
+  when:
+    - not ansible_unit_test
+    - ver|failed
+
+- name: unarchive tomb manpage
+  unarchive:
+    copy: no
+    src: "/tmp/{{tomb_tgz}}"
+    dest: "{{tomb_manpage_directory}}"
+    owner: "{{tomb_owner}}"
+    group: "{{tomb_group}}"
+    mode: 644
+    extra_opts:
+      - "--strip=2"
+      - "--wildcards"
+      - "*/doc/tomb.1"
+  when:
+    - not ansible_unit_test
+    - ver|failed
+
+- name: Remove archive
+  file:
+    state: absent
+    path: "/tmp/{{tomb_tgz}}"
+  when:
+    - not ansible_unit_test
+    - ver|failed
+
+- name: install optional tools
+  apt: name={{ item }} state=installed
+  with_items: "{{ tomb_optional_tools }}"

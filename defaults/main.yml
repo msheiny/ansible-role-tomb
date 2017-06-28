@@ -1,0 +1,26 @@
+---
+# defaults file for ansible-tomb
+
+ansible_unit_test: false
+tomb_role_release: '0.0.1'
+
+# tomb version to install
+tomb_version: 'latest'
+
+# tomb name with installed version
+tomb_name: 'tomb'
+
+# tomb install directory
+tomb_install_directory: '/usr/local/bin'
+
+# tomb install directory
+tomb_manpage_directory: '/usr/local/share/man/man1'
+
+# tomb owner
+tomb_owner: 'root'
+
+# tomb group
+tomb_group: 'root'
+
+# tomb set suid access
+tomb_mode: '4755'
