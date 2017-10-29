@@ -3,6 +3,8 @@ ansible-role-tomb
 
 [![BSD License](http://img.shields.io/badge/license-BSD-blue.svg)](http://opensource.org/licenses/BSD-3-Clause)
 
+[![CircleCI](https://circleci.com/gh/msheiny/ansible-role-tomb/tree/master.svg?style=svg)](https://circleci.com/gh/msheiny/ansible-role-tomb/tree/master)
+
 Ansible role for managing tomb installation from https://nuetzlich.net/tomb/
 
 Forked from https://github.com/eddyhub/ansible-tomb
@@ -105,5 +107,5 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Author Information
 ------------------
 
-ORIGINAL AUTHOR: eddyhub@users.noreply.github.com
-MODIFICATIONS: m.sheiny@gmail.com
+* ORIGINAL AUTHOR: eddyhub@users.noreply.github.com
+* REFACTOR: m.sheiny@gmail.com
