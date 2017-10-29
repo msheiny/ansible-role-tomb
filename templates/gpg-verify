@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+#
+export GNUPGHOME=$(mktemp -d)
+
+echo "{{tomb_dyne_gpg_key|b64encode}}" | base64 --decode | gpg --import
+
+cd /tmp
+gpg --verify {{ tomb_tgz }}.asc

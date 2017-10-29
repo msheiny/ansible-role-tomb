@@ -1,0 +1,62 @@
+---
+
+- name: Set archive fact names
+  set_fact:
+    tomb_tgz: "{{tomb_name|capitalize}}_{{tomb_dl_version}}.tar.gz"
+    tomb_tgz_url: "{{tomb_full_url}}/{{tomb_name|capitalize}}-{{tomb_dl_version}}.tar.gz"
+
+- name: Downloading tomb archive and signature
+  get_url:
+    url: "{{ tomb_tgz_url }}{{ item }}"
+    dest: "/tmp/{{ tomb_tgz }}{{ item }}"
+    mode: 0644
+  with_items:
+    - ""
+    - ".asc"
+
+- name: Copy over GPG verify script
+  template:
+    src: gpg-verify
+    dest: /tmp/tomb-gpg-verify
+    mode: 0655
+
+- name: Confirm tar file is signed with dyne GPG key
+  command: /tmp/tomb-gpg-verify
+
+- name: unarchive tomb and copy tomb
+  unarchive:
+    copy: "no"
+    src: "/tmp/{{tomb_tgz}}"
+    dest: "{{tomb_install_directory}}"
+    owner: "{{tomb_owner}}"
+    group: "{{tomb_group}}"
+    mode: "{{tomb_mode}}"
+    extra_opts:
+      - "--strip=1"
+      - "--wildcards"
+      - "*/tomb"
+
+- name: Create man page dir
+  file:
+    path: "{{tomb_manpage_directory}}"
+    state: directory
+
+- name: unarchive tomb manpage
+  unarchive:
+    copy: "no"
+    src: "/tmp/{{tomb_tgz}}"
+    dest: "{{tomb_manpage_directory}}"
+    owner: "{{tomb_owner}}"
+    group: "{{tomb_group}}"
+    mode: 644
+    extra_opts:
+      - "--strip=2"
+      - "--wildcards"
+      - "*/doc/tomb.1"
+
+- name: install optional tools
+  package:
+    name: "{{ item }}"
+    state: "installed"
+  with_items: "{{ tomb_optional_tools }}"
+  when: tomb_install_optional_tools

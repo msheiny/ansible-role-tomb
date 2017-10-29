@@ -1,36 +1,21 @@
-ansible-tomb
-=========
+ansible-role-tomb
+=================
 
 [![BSD License](http://img.shields.io/badge/license-BSD-blue.svg)](http://opensource.org/licenses/BSD-3-Clause)
-[![Build Status](https://travis-ci.org/eddyhub/ansible-tomb.svg?branch=master)](https://travis-ci.org/eddyhub/ansible-tomb)
 
 Ansible role for managing tomb installation from https://nuetzlich.net/tomb/
 
-Installation
-------------
-
-ansible-galaxy install eddyhub.tomb
-
-Requirements
-------------
-
-None.
+Forked from https://github.com/eddyhub/ansible-tomb
 
 Role Variables
 --------------
 
 ```yaml
 ---
-# defaults file for ansible-tomb
-
-ansible_unit_test: false
-tomb_role_release: '0.0.1'
+# defaults file for ansible-role-tomb
 
 # tomb version to install
 tomb_version: 'latest'
-
-# tomb platform
-tomb_platform: 'amd64'
 
 # tomb name with installed version
 tomb_name: 'tomb'
@@ -49,12 +34,30 @@ tomb_group: 'root'
 
 # tomb set suid access
 tomb_mode: '4755'
+
+# Web Urls
+tomb_base_url: 'https://files.dyne.org/tomb'
+tomb_package_meta_json: 'https://api.github.com/repos/dyne/Tomb/tags'
+
+# install optional tools as defined in the tomb installation docs
+# https://github.com/dyne/Tomb/blob/master/INSTALL.md
+tomb_install_optional_tools: "false"
+
+# Key from https://keybase.io/jaromil
+tomb_dyne_gpg_key: |
+  -----BEGIN PGP PUBLIC KEY BLOCK-----
+  Version: GnuPG v1
+  [ ... ]
+  wSk4lJDtTCi9L0cjfo2xt2DSYDOt4NdZ1mbDavlv/K0KMns/LCIbDHE5lrhxoKLQ
+  2mjWpi95PsdnW3BbfAtvpgxqdvTO1fdIZEdBy/WBOxBF3RpPiSFbcTNzXMzwOI9f
+  fQ8eS5QjyJwJcsbM50DKtvlOHeRUigjS3p+u4kXLspqy9lafpviHpbQ6VBiX5MgM
+  /wST/LRjesJvwPqHyW1Mj57FN22KRkPSCpcMvzRY7hHvJLjIALdAEe6oqb62JLrA
+  rUPLLNUtPz9Q9MtVcrTmFsdYT0v0fNZnsuu3A0ioJQe1kB0vbJbBXImB3odSAQdW
+  nybDbRloiirCWTJD6KCihxdeQ/4KHngQc6KAYTmMXZ87eLioxMh1Abv0t1Y4/i9a
+  gT1qQmzalWIyOB0o8+lDaYefxehnAD7QBEcpQ3qB3huw0oQ7J9u4Lkhb4mE9mGdI
+  =HXVw
+  -----END PGP PUBLIC KEY BLOCK-----
 ```
-
-Dependencies
-------------
-
-None, for role to install.
 
 Example Playbook
 ----------------
@@ -64,11 +67,12 @@ Example Playbook
   hosts: all
   sudo: yes
   roles:
-    - role: eddyhub.tomb
+    - role: msheiny.tomb
 ```
 
 License
 -------
+
 
 Copyright (c) 2017, Eduard Angold
 All rights reserved.
@@ -101,4 +105,5 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Author Information
 ------------------
 
-eddyhub@users.noreply.github.com
+ORIGINAL AUTHOR: eddyhub@users.noreply.github.com
+MODIFICATIONS: m.sheiny@gmail.com

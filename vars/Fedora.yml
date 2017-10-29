@@ -1,0 +1,19 @@
+---
+tomb_necessary_tools:
+  - zsh
+  - sudo
+  - gnupg
+  - cryptsetup
+  - pinentry-curses
+  - e2fsprogs
+
+tomb_optional_tools:
+  - lsof
+  - dcfldd
+  - steghide
+  - e2fsprogs
+  - qrencode
+  - mlocate
+  - unoconv
+  - haveged
+  - wipe

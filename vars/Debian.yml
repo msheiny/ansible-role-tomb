@@ -1,8 +1,5 @@
 ---
-# vars file for ansible-tomb
-
-tomb_base_url: 'https://github.com/dyne/Tomb/archive'
-tomb_package_meta_json: 'https://api.github.com/repos/dyne/Tomb/tags'
+# vars file for ansible-role-tomb
 
 tomb_necessary_tools:
   - zsh

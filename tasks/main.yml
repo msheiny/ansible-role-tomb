@@ -1,11 +1,14 @@
 ---
-# tasks file for ansible-tomb
+# tasks file for ansible-role-tomb
+
+- name: Load platform specific variables
+  include_vars: "{{ ansible_distribution }}.yml"
 
 - name: install necessary tools
-  apt: name={{ item }} state=installed
+  package: name={{ item }} state=installed
   with_items: "{{ tomb_necessary_tools }}"
 
-- name: Check tomb file
+- name: Check for existing tomb binary
   stat:
     path: "{{tomb_install_directory}}/{{tomb_name}}"
   register: st
@@ -14,93 +17,37 @@
   uri:
     url: "{{tomb_package_meta_json}}"
     method: GET
-    return_content: yes
+    return_content: "yes"
   register: latest_version_info
 
-- name: Set latest version as fact
+- name: Squash the latest version into a fact for re-use
   set_fact:
-    tomb_version: "{{ (latest_version_info.content|from_json|first).name }}"
-  when: tomb_version == "latest"
+    tomb_latest_version: "{{(latest_version_info.content|from_json|first).name}}"
+
+- name: Build download url
+  set_fact:
+    tomb_dl_version: "{{ tomb_version | replace('v','') }}"
+    tomb_full_url: "{{ tomb_base_url }}/old-releases"
+  when:
+    - tomb_version != tomb_latest_version
+    - tomb_version != "latest"
+
+- name: Build download url
+  set_fact:
+    tomb_dl_version: "{{ tomb_latest_version | replace('v','')}}"
+    tomb_full_url: "{{ tomb_base_url }}"
+  when: tomb_version == "latest" or tomb_version == tomb_latest_version
 
 - name: Check tomb version
   shell: |
-    grep 'VERSION="{{tomb_version | replace('v', '')}}"' {{tomb_install_directory}}/{{tomb_name}}
+    grep 'VERSION="{{ tomb_dl_version }}"' {{tomb_install_directory}}/{{tomb_name}}
   register: ver
   when: st.stat.exists
   failed_when: false
   changed_when: false
+  tags:
+    - skip_ansible_lint
 
-- name: Set archive name as fact unless testing
-  set_fact:
-    tomb_tgz: "{{tomb_name}}_{{tomb_version}}.tar.gz"
-  when:
-    - not ansible_unit_test
-    - ver|failed
-
-- name: Set install url as fact unless testing
-  set_fact:
-    tomb_tgz_url: "{{tomb_base_url}}/{{tomb_version}}.tar.gz"
-  when:
-    - not ansible_unit_test
-    - ver|failed
-
-- name: Downloading tomb archive
-  get_url:
-    url: "{{tomb_tgz_url}}"
-    dest: "/tmp/{{tomb_tgz}}"
-    mode: 0644
-  when:
-    - not ansible_unit_test
-    - ver|failed
-
-- name: unarchive tomb and copy tomb
-  unarchive:
-    copy: no
-    src: "/tmp/{{tomb_tgz}}"
-    dest: "{{tomb_install_directory}}"
-    owner: "{{tomb_owner}}"
-    group: "{{tomb_group}}"
-    mode: "{{tomb_mode}}"
-    extra_opts:
-      - "--strip=1"
-      - "--wildcards"
-      - "*/tomb"
-  when:
-    - not ansible_unit_test
-    - ver|failed
-
-- name: Create man page dir
-  file:
-    path: "{{tomb_manpage_directory}}"
-    state: directory
-  when:
-    - not ansible_unit_test
-    - ver|failed
-
-- name: unarchive tomb manpage
-  unarchive:
-    copy: no
-    src: "/tmp/{{tomb_tgz}}"
-    dest: "{{tomb_manpage_directory}}"
-    owner: "{{tomb_owner}}"
-    group: "{{tomb_group}}"
-    mode: 644
-    extra_opts:
-      - "--strip=2"
-      - "--wildcards"
-      - "*/doc/tomb.1"
-  when:
-    - not ansible_unit_test
-    - ver|failed
-
-- name: Remove archive
-  file:
-    state: absent
-    path: "/tmp/{{tomb_tgz}}"
-  when:
-    - not ansible_unit_test
-    - ver|failed
-
-- name: install optional tools
-  apt: name={{ item }} state=installed
-  with_items: "{{ tomb_optional_tools }}"
+- name: Download and install Tomb
+  import_tasks: install.yml
+  when: ver|failed or not st.stat.exists
