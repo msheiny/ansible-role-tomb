@@ -1,0 +1,4 @@
+ansible
+docker-py
+molecule
+pip-tools
