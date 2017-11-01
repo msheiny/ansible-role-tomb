@@ -10,6 +10,7 @@
     url: "{{ tomb_tgz_url }}{{ item }}"
     dest: "/tmp/{{ tomb_tgz }}{{ item }}"
     mode: 0644
+  become: "no"
   with_items:
     - ""
     - ".asc"
